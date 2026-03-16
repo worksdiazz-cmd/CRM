@@ -1,0 +1,7 @@
+Transaction_ID,Company,Date,Value,Total,Product
+"TXN-001","PT Maju Sejahtera","2025-02-01","75000000","75000000","Chemical A"
+"TXN-002","PT Global Chemicals","2025-02-20","150000000","150000000","Chemical C"
+"TXN-003","PT Tekno Kimia","2025-03-20","120000000","120000000","Chemical B"
+"TXN-004","CV Bintang Timur","2025-05-15","15000000","15000000","Chemical D"
+"TXN-005","CV Cipta Karya","2025-06-25","82500000","82500000","Chemical C"
+"TXN-006","CV Perkasa Jaya","2026-01-30","52500000","52500000","Chemical A"

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOB CRM - Dashboard</title>
+    <meta name="description" content="GLOB CRM - Customer Relationship Management for Strategic Sourcing">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Status Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"><div class="spinner"></div><span>Loading CRM data...</span></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon"><span class="material-icons-outlined">hub</span></div>
+                <div class="logo-text">
+                    <h1>GLOB CRM</h1>
+                    <span class="logo-subtitle">Strategic Sourcing</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-section-title">Main Menu</span>
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="material-icons-outlined">dashboard</span><span class="nav-label">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="customers">
+                    <span class="material-icons-outlined">people</span><span class="nav-label">Customer List</span>
+                </a>
+                <a href="#" class="nav-item" data-page="transactions">
+                    <span class="material-icons-outlined">receipt_long</span><span class="nav-label">Customer Existing</span>
+                </a>
+                <a href="#" class="nav-item" data-page="issues">
+                    <span class="material-icons-outlined">report_problem</span><span class="nav-label">Customer Issue</span>
+                </a>
+            </div>
+            <div class="nav-section">
+                <span class="nav-section-title">System</span>
+                <a href="#" class="nav-item" data-page="settings">
+                    <span class="material-icons-outlined">settings</span><span class="nav-label">Settings</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="connection-status">
+                <div class="connection-dot disconnected" id="connectionDot"></div>
+                <span class="connection-text" id="connectionText">Disconnected</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <span class="material-icons-outlined">menu</span>
+                </button>
+                <div class="page-title">
+                    <h2 id="pageTitle">Performance Overview</h2>
+                    <span class="page-breadcrumb" id="pageBreadcrumb">Dashboard / Overview</span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="topbar-icon-btn" onclick="loadAllData()">
+                    <span class="material-icons-outlined">refresh</span>
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar">HA</div>
+                    <div class="user-info">
+                        <span class="user-name">Hilarius A.</span>
+                        <span class="user-role">Admin</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ============================================ -->
+        <!-- PAGE: Dashboard -->
+        <!-- ============================================ -->
+        <section class="page active" id="page-dashboard">
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-card-inner">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Incoming Chats</span>
+                            <h3 class="kpi-value" id="kpiIncoming">0</h3>
+                        </div>
+                        <div class="kpi-icon blue"><span class="material-icons-outlined">chat_bubble</span></div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-card-inner">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Customer On Going</span>
+                            <h3 class="kpi-value" id="kpiOngoing">0</h3>
+                        </div>
+                        <div class="kpi-icon amber"><span class="material-icons-outlined">hourglass_top</span></div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-card-inner">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Customer Transaction</span>
+                            <h3 class="kpi-value" id="kpiTransaction">0</h3>
+                        </div>
+                        <div class="kpi-icon green"><span class="material-icons-outlined">check_circle</span></div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-card-inner">
+                        <div class="kpi-info">
+                            <span class="kpi-label">Total Revenue</span>
+                            <h3 class="kpi-value" id="kpiRevenue">Rp 0</h3>
+                        </div>
+                        <div class="kpi-icon purple"><span class="material-icons-outlined">payments</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Pipeline Funnel -->
+                <div class="card pipeline-card">
+                    <div class="card-header"><h3 class="card-title">Pipeline Funnel Status</h3></div>
+                    <div class="card-body"><div class="pipeline-funnel" id="pipelineFunnel"></div></div>
+                </div>
+                <!-- Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Incoming Chat Comparison</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span> 2025</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> 2026</span>
+                        </div>
+                    </div>
+                    <div class="card-body chart-container"><canvas id="chatChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- PAGE: Customer List (Pipeline) -->
+        <!-- ============================================ -->
+        <section class="page" id="page-customers">
+            <div class="card table-card">
+                <div class="card-header">
+                    <h3 class="card-title">Leads Pipeline</h3>
+                    <div class="table-actions">
+                        <div class="search-box table-search">
+                            <span class="material-icons-outlined">search</span>
+                            <input type="text" placeholder="Search customers..." id="customerSearch">
+                        </div>
+                        <select class="filter-select" id="pipelineStatusFilter">
+                            <option value="all">All Status</option>
+                            <option value="Incoming Chat">Incoming Chat</option>
+                            <option value="Ask Product">Ask Product</option>
+                            <option value="Ask Price">Ask Price</option>
+                            <option value="Visit / Sample Sent">Visit / Sample Sent</option>
+                            <option value="Closed Deal">Closed Deal</option>
+                            <option value="Closed Issue">Closed Issue</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="showAddLeadModal()">
+                            <span class="material-icons-outlined">add</span> Add Lead
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-wrapper">
+                        <table class="data-table" id="customerTable">
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Product</th>
+                                    <th>Potential Value</th>
+                                    <th>Source</th>
+                                    <th>Incoming Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-pagination" id="customerPagination"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- PAGE: Customer Existing (Transactions) -->
+        <!-- ============================================ -->
+        <section class="page" id="page-transactions">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-icon blue"><span class="material-icons-outlined">business</span></span>
+                    <div class="stat-info"><span class="stat-value" id="statCompanies">0</span><span class="stat-label">Companies</span></div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon green"><span class="material-icons-outlined">receipt</span></span>
+                    <div class="stat-info"><span class="stat-value" id="statTxnCount">0</span><span class="stat-label">Transactions</span></div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon purple"><span class="material-icons-outlined">attach_money</span></span>
+                    <div class="stat-info"><span class="stat-value" id="statRevenue">Rp 0</span><span class="stat-label">Total Revenue</span></div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon amber"><span class="material-icons-outlined">shopping_cart</span></span>
+                    <div class="stat-info"><span class="stat-value" id="statAvgOrder">Rp 0</span><span class="stat-label">Avg Order</span></div>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="card-header">
+                    <h3 class="card-title">Transaction History</h3>
+                    <div class="table-actions">
+                        <div class="search-box table-search">
+                            <span class="material-icons-outlined">search</span>
+                            <input type="text" placeholder="Search transactions..." id="transactionSearch">
+                        </div>
+                        <select class="filter-select" id="txnYearFilter">
+                            <option value="all">All Years</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-wrapper">
+                        <table class="data-table" id="transactionTable">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Company</th>
+                                    <th>Date</th>
+                                    <th>Value</th>
+                                    <th>Total</th>
+                                    <th>Product</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-pagination" id="transactionPagination"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- PAGE: Customer Issue -->
+        <!-- ============================================ -->
+        <section class="page" id="page-issues">
+            <div class="card table-card">
+                <div class="card-header">
+                    <h3 class="card-title">Customer Issues</h3>
+                    <div class="table-actions">
+                        <div class="search-box table-search">
+                            <span class="material-icons-outlined">search</span>
+                            <input type="text" placeholder="Search issues..." id="issueSearch">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-wrapper">
+                        <table class="data-table" id="issueTable">
+                            <thead>
+                                <tr>
+                                    <th>Issue ID</th>
+                                    <th>Customer</th>
+                                    <th>Company</th>
+                                    <th>Product</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issueBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-pagination" id="issuePagination"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- PAGE: Settings -->
+        <!-- ============================================ -->
+        <section class="page" id="page-settings">
+            <div class="card settings-card">
+                <div class="card-header"><h3 class="card-title"><span class="material-icons-outlined">settings</span> Google Sheets Configuration</h3></div>
+                <div class="card-body">
+                    <div class="settings-info-box">
+                        <span class="material-icons-outlined">info</span>
+                        <div>
+                            <p><strong>How to connect Google Sheets:</strong></p>
+                            <ol>
+                                <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                                <li>Create a project & enable <strong>Google Sheets API</strong> + <strong>Google Drive API</strong></li>
+                                <li>Create a <strong>Service Account</strong> → Download JSON key</li>
+                                <li>Save as <code>credentials.json</code> in the CRM folder</li>
+                                <li>Restart the server, then enter your Spreadsheet ID below</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="settings-form">
+                        <div class="settings-status" id="settingsStatus"></div>
+
+                        <div class="form-group">
+                            <label>Spreadsheet ID</label>
+                            <input type="text" id="settingsSpreadsheetId" class="form-input" placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+                            <small>Copy from: https://docs.google.com/spreadsheets/d/<strong>[THIS_IS_THE_ID]</strong>/edit</small>
+                        </div>
+                        <div class="settings-actions">
+                            <button class="btn btn-secondary" onclick="createNewSpreadsheet()">
+                                <span class="material-icons-outlined">add_circle</span> Create New Sheet
+                            </button>
+                            <button class="btn btn-primary" onclick="saveSpreadsheetId()">
+                                <span class="material-icons-outlined">save</span> Connect & Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================ -->
+    <!-- MODAL: Add / Edit Lead -->
+    <!-- ============================================ -->
+    <div class="modal-overlay" id="leadModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Lead</h3>
+                <button class="modal-close" onclick="closeLeadModal()">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+            <form id="leadForm">
+                <input type="hidden" id="editRowIndex">
+                <input type="hidden" id="editLeadId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" id="formCustomerName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Company *</label>
+                        <input type="text" id="formCompany" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Product *</label>
+                        <input type="text" id="formProduct" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="text" id="formQty" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Potential Value (IDR)</label>
+                        <input type="number" id="formPotentialValue" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Source</label>
+                        <select id="formSource" class="form-input">
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Website">Website</option>
+                            <option value="Email">Email</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Exhibition">Exhibition</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Google Ads">Google Ads</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Edit-only: Status & Dates -->
+                <div id="editFields" style="display:none">
+                    <hr class="form-divider">
+                    <h4 class="form-section-title">Pipeline Progress</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Current Status</label>
+                            <select id="formStatus" class="form-input">
+                                <option value="Incoming Chat">Incoming Chat</option>
+                                <option value="Ask Product">Ask Product</option>
+                                <option value="Ask Price">Ask Price</option>
+                                <option value="Visit / Sample Sent">Visit / Sample Sent</option>
+                                <option value="Closed Deal">Closed Deal</option>
+                                <option value="Closed Issue">Closed Issue</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Incoming Chat Date</label>
+                            <input type="date" id="formIncomingDate" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Ask Product Date</label>
+                            <input type="date" id="formAskProductDate" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Ask Price Date</label>
+                            <input type="date" id="formAskPriceDate" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Visit / Sample Sent Date</label>
+                            <input type="date" id="formVisitDate" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Closed Deal Date</label>
+                            <input type="date" id="formClosedDealDate" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Closed Issue Date</label>
+                            <input type="date" id="formClosedIssueDate" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Notes</label>
+                    <textarea id="formNotes" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeLeadModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><span class="material-icons-outlined">save</span> Save Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

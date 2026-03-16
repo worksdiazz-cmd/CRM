@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOB CRM - SQLite Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CRUD Specific Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--bg-card); width: 600px; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .form-group.full-width { grid-column: span 2; }
+        .form-group label { font-size: 0.85rem; color: var(--text-secondary); }
+        .form-group input, .form-group select, .form-group textarea { background: var(--bg-input); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; color: #fff; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+        .btn-primary { background: var(--accent-blue); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: 0.2s; }
+        .btn-secondary { background: var(--bg-input); color: var(--text-secondary); padding: 10px 20px; border-radius: 8px; }
+        .header-with-actions { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 15px; }
+        .action-buttons { display: flex; gap: 8px; }
+        .action-btn { padding: 6px; border-radius: 6px; display: flex; align-items: center; transition: 0.2s; }
+        .action-btn.edit { color: var(--accent-blue); background: var(--accent-blue-soft); }
+        .action-btn.delete { color: var(--accent-red); background: var(--accent-red-soft); }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-badge.closed-deal { background: var(--accent-green-soft); color: var(--accent-green); }
+        .status-badge.ask-price { background: var(--accent-amber-soft); color: var(--accent-amber); }
+        .status-badge.closed-issue { background: var(--accent-red-soft); color: var(--accent-red); }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"><div class="spinner"></div><span>Loading Data...</span></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><div class="logo-icon"><span class="material-icons-outlined">hub</span></div><div class="logo-text"><h1>GLOB CRM</h1><span class="logo-subtitle">Strategic Sourcing</span></div></div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <a href="#" class="nav-item active" data-page="dashboard"><span class="material-icons-outlined">dashboard</span>Dashboard</a>
+                <a href="#" class="nav-item" data-page="customers"><span class="material-icons-outlined">group</span>Leads Pipeline</a>
+                <a href="#" class="nav-item" data-page="transactions"><span class="material-icons-outlined">receipt_long</span>Transactions</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="connection-status"><div class="connection-dot" id="connectionDot"></div><span id="connectionText">SQLite Local</span></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="page-title"><h2 id="pageTitle">Dashboard Overview</h2><span class="page-breadcrumb">Local CRM Database</span></div>
+            <div class="user-profile"><div class="user-avatar">AD</div><div class="user-info"><span class="user-name">Admin</span><span class="user-role">Strategic Sourcing</span></div></div>
+        </header>
+
+        <!-- Page: Dashboard -->
+        <section class="page active" id="page-dashboard">
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="kpi-label">Total Leads</div><h3 class="kpi-value" id="kpiIncoming">0</h3></div>
+                <div class="kpi-card"><div class="kpi-label">On Going</div><h3 class="kpi-value" id="kpiOngoing">0</h3></div>
+                <div class="kpi-card"><div class="kpi-label">Sales Count</div><h3 class="kpi-value" id="kpiTransaction">0</h3></div>
+                <div class="kpi-card"><div class="kpi-label">Total Revenue</div><h3 class="kpi-value" id="kpiRevenue">Rp 0</h3></div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="card"><div class="card-header"><h3>Pipeline Status</h3></div><div class="card-body" id="pipelineFunnel"></div></div>
+                <div class="card"><div class="card-header"><h3>Performance Chart</h3></div><div class="card-body"><canvas id="revenueChart"></canvas></div></div>
+            </div>
+        </section>
+
+        <!-- Page: Leads -->
+        <section class="page" id="page-customers">
+            <div class="card">
+                <div class="card-header">
+                    <div class="header-with-actions">
+                        <h3>Customer Pipeline</h3>
+                        <button class="btn-primary" onclick="showAddLeadModal()"><span class="material-icons-outlined">add</span> Add New Lead</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="data-table">
+                        <thead><tr><th>Company</th><th>Contact</th><th>Product</th><th>Value</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="customerBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Page: Transactions -->
+        <section class="page" id="page-transactions">
+            <div class="card">
+                <div class="card-header"><h3>Transaction History</h3></div>
+                <div class="card-body">
+                    <table class="data-table">
+                        <thead><tr><th>ID</th><th>Company</th><th>Date</th><th>Value</th><th>Product</th><th>Actions</th></tr></thead>
+                        <tbody id="transactionBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Form -->
+    <div id="leadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="modalTitle">Add New Lead</h3><span onclick="closeLeadModal()" style="cursor:pointer">&times;</span></div>
+            <form id="leadForm">
+                <input type="hidden" id="editLeadId">
+                <div class="form-grid">
+                    <div class="form-group"><label>Customer Name</label><input type="text" id="formCustomerName" required></div>
+                    <div class="form-group"><label>Company</label><input type="text" id="formCompany" required></div>
+                    <div class="form-group"><label>Product</label><input type="text" id="formProduct" required></div>
+                    <div class="form-group"><label>Potential Value</label><input type="number" id="formPotentialValue"></div>
+                    <div class="form-group"><label>Qty</label><input type="text" id="formQty"></div>
+                    <div class="form-group"><label>Status</label>
+                        <select id="formStatus">
+                            <option value="Incoming Chat">Incoming Chat</option>
+                            <option value="Ask Price">Ask Price</option>
+                            <option value="Closed Deal">Closed Deal</option>
+                            <option value="Closed Issue">Closed Issue</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Source</label><input type="text" id="formSource"></div>
+                </div>
+                <div class="form-group full-width"><label>Notes</label><textarea id="formNotes"></textarea></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeLeadModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

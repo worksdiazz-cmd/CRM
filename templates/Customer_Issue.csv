@@ -1,0 +1,4 @@
+Issue_ID,Customer_Name,Company,Product,Issue_Date,Issue_Description,Resolution_Status,Notes
+"ISS-001","Eka Putri","CV Sukses Mandiri","Chemical D","2025-03-12","Price too high, customer chose competitor","Closed","Offered discount for next order"
+"ISS-002","Joko Susanto","PT Abadi Jaya","Chemical B","2025-04-28","Could not meet requested delivery date","Closed","Logistics issue resolved"
+"ISS-003","Utami Rahayu","CV Bersama Maju","Chemical B","2026-03-12","Product specification mismatch","Open","Reviewing alternative products"
